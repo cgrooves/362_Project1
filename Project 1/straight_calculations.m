@@ -2,8 +2,8 @@ addpath ./'Code From Caleb'
 object = load('calibrated_dlt_object');
 frame = object.frame;
 
-left_green = load('./Left_Straight_pics/Left_Straight_Green.txt');
-right_green = load('./Right_Straight_pics/Right_Straight_Green.txt');
+left_green = load('./Left_Straight_Pics/Left_Straight_Green.txt');
+right_green = load('./Right_Straight_Pics/Right_Straight_Green.txt');
 
 n = size(left_green,1);
 
@@ -97,13 +97,14 @@ plot3(points2d(:,1),z2d,points2d(:,2),'r:')
 
 % straight trajectory
 center_straight = [8.26310793571569;8.50461638854701;0.663525083813644]';
-theta = linspace(0,2*pi);
+n = 42;
+theta = linspace(0,2*pi,n);
 R = 13.5/2;
-trajectory = zeros(100,3);
+trajectory = zeros(n,3);
 
 trajectory(:,1) = R*cos(theta);
 trajectory(:,2) = R*sin(theta);
-trajectory(:,3) = zeros(100,1);
+%trajectory(:,3) = zeros(100,1);
 
 trajectory_straight(:,1) = trajectory(:,1)+center_straight(1);
 trajectory_straight(:,2) = trajectory(:,2)+center_straight(2);
@@ -137,3 +138,23 @@ xlabel('Time (sec)')
 ylabel('Velocity (in/sec)')
 title('Velocity of Ball (Straight)')
 legend('2 Camera Method','1 Camera Method')
+
+%% error
+% get position 3d from points 21 to 62
+experimental3d = position3d(21:62,:);
+error3d = (experimental3d - trajectory_straight )./ trajectory_straight;
+error_mag = sqrt(error3d(:,1).^2 + error3d(:,2).^2 + error3d(:,3).^2);
+trajectory_straight(:,3) = [];
+experimental2d = points2d(21:62,:);
+error_2d = (experimental2d - trajectory_straight ) ./ trajectory_straight;
+error_mag2d = sqrt(error_2d(:,1).^2 + error_2d(:,2).^2);
+
+figure(3)
+plot(-theta.*180/pi+360,error_mag)
+xticks(linspace(0,360,13))
+xlabel('Angle of Rotation (deg)')
+ylabel('Percent Error')
+set(gca,'Xlim',[0,360])
+hold on
+plot(-theta.*180/pi + 360, error_mag2d)
+legend('2 Camera Method', '1 Camera Method')
